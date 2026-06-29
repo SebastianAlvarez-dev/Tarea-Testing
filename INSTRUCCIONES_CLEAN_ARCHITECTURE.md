@@ -821,6 +821,51 @@ Ejemplo:
 var response = await sender.Send(new GetUsuariosQuery(1, 10));
 ```
 
+### Ajuste: pipeline behaviors de MediatR
+
+Se agregaron behaviors transversales para logging y medicion de tiempo.
+
+Ubicacion:
+
+```text
+Application/
+  Common/
+    Behaviors/
+      LoggingBehavior.cs
+      TimerBehavior.cs
+```
+
+Reglas:
+
+- Los behaviors deben vivir en `Application/Common/Behaviors`.
+- Deben implementarse como open generics usando `IPipelineBehavior<TRequest, TResponse>`.
+- Deben registrarse en `Application/DependencyInjection.cs` con `AddOpenBehavior`.
+- Deben aplicar a commands y queries sin modificar cada handler.
+- No deben contener reglas de negocio.
+
+Registro actual:
+
+```csharp
+services.AddMediatR(configuration =>
+{
+    configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+    configuration.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    configuration.AddOpenBehavior(typeof(TimerBehavior<,>));
+});
+```
+
+`LoggingBehavior` registra:
+
+- Inicio de cada request.
+- Finalizacion correcta.
+- Error con excepcion cuando falla el handler o algun behavior posterior.
+
+`TimerBehavior` registra:
+
+- Tiempo total de ejecucion de cada request.
+- `Information` para requests normales.
+- `Warning` cuando una request supera el umbral definido como lenta.
+
 ### Ajuste: pruebas funcionales
 
 Se agrego un proyecto de pruebas funcionales con NUnit.
