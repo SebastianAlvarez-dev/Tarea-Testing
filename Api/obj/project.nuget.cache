@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "CQup7HWf7fE=",
+  "dgSpecHash": "iaVd5i6UH6E=",
   "success": true,
-  "projectFilePath": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
+  "projectFilePath": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\sebas\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.5\\microsoft.aspnetcore.openapi.10.0.5.nupkg.sha512",
     "C:\\Users\\sebas\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"

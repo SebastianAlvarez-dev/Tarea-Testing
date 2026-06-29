@@ -15,7 +15,7 @@ public class Api : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the Api project.
     /// </summary>
-    public string ProjectPath => """c:\Users\sebas\Documents\Tarea#2 Servidores\Api\Api.csproj""";
+    public string ProjectPath => """C:\Users\sebas\Documents\Tarea#2 Servidores\Api\Api.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

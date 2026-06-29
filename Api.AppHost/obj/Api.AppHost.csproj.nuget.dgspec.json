@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj": {}
+    "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj": {}
   },
   "projects": {
-    "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj": {
+    "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj",
+        "projectUniqueName": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj",
         "projectName": "Api.AppHost",
-        "projectPath": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj",
+        "projectPath": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\Api.AppHost.csproj",
         "packagesPath": "C:\\Users\\sebas\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\obj\\",
+        "outputPath": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api.AppHost\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\NuGet.Config",
+          "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\NuGet.Config",
           "C:\\Users\\sebas\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
