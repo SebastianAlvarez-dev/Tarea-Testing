@@ -10,6 +10,11 @@ Accept: application/json
 
 ###
 
+GET {{Api_HostAddress}}/api/usuarios/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
 POST {{Api_HostAddress}}/api/usuarios
 Content-Type: application/json
 
@@ -18,5 +23,21 @@ Content-Type: application/json
   "apellido": "Prueba",
   "email": "SEBASTIAN.PRUEBA@example.com"
 }
+
+###
+
+PUT {{Api_HostAddress}}/api/usuarios/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nombre": "Sebastian",
+  "apellido": "Actualizado",
+  "email": "sebastian.actualizado@example.com"
+}
+
+###
+
+DELETE {{Api_HostAddress}}/api/usuarios/00000000-0000-0000-0000-000000000000
+Accept: application/json
 
 ###

@@ -679,9 +679,6 @@ Estructura agregada:
 ```text
 Api/
   Application/
-    Abstractions/
-      Data/
-        IUsuarioRepository.cs
     Features/
       Usuarios/
         CreateUsuario/
@@ -690,14 +687,16 @@ Api/
           GetUsuarioById.cs
         GetUsuarios/
           GetUsuarios.cs
+        UpdateUsuario/
+          UpdateUsuario.cs
+        DeleteUsuario/
+          DeleteUsuario.cs
     DependencyInjection.cs
   Infrastructure/
     Data/
       ApplicationDbContext.cs
       Configurations/
         UsuarioConfiguration.cs
-      Repositories/
-        UsuarioRepository.cs
       Seed/
         DatabaseSeeder.cs
     DependencyInjection.cs
@@ -711,13 +710,14 @@ Endpoints agregados:
 GET  /api/usuarios
 GET  /api/usuarios/{id}
 POST /api/usuarios
+PUT  /api/usuarios/{id}
+DELETE /api/usuarios/{id}
 ```
 
 Reglas aplicadas:
 
 - La API delega en handlers de Application.
-- Application depende de `IUsuarioRepository`, no de Entity Framework directamente.
-- Infrastructure implementa `UsuarioRepository` con `ApplicationDbContext`.
+- Las features usan directamente `ApplicationDbContext`.
 - `Usuario.Email` se persiste como string usando conversion de EF Core hacia el value object `Email` de Vogen.
 - `DatabaseSeeder` usa Bogus para crear 20 usuarios iniciales cuando la tabla esta vacia.
 - El seed se ejecuta al iniciar la API.
@@ -745,6 +745,10 @@ Application/
         GetUsuarioById.cs
       GetUsuarios/
         GetUsuarios.cs
+      UpdateUsuario/
+        UpdateUsuario.cs
+      DeleteUsuario/
+        DeleteUsuario.cs
 ```
 
 Contenido esperado por archivo:
@@ -868,3 +872,77 @@ Respuesta:
   "hasNextPage": false
 }
 ```
+
+### Implementacion: CRUD de usuarios con soft delete
+
+Se completo el CRUD de usuarios manteniendo la arquitectura por vertical slice.
+
+Features agregadas:
+
+```text
+Application/
+  Features/
+    Usuarios/
+      UpdateUsuario/
+        UpdateUsuario.cs
+      DeleteUsuario/
+        DeleteUsuario.cs
+```
+
+Endpoints:
+
+```text
+PUT    /api/usuarios/{id}
+DELETE /api/usuarios/{id}
+```
+
+Reglas de update:
+
+- `UpdateUsuario` actualiza `Nombre`, `Apellido` y `Email`.
+- Si el usuario no existe, la feature retorna `null` y el controller responde `404 NotFound`.
+- El email sigue usando el value object `Email` de Vogen.
+- No se permite duplicar el email de otro usuario activo.
+- No se actualizan usuarios eliminados porque quedan ocultos por el filtro global de EF Core.
+
+Reglas de delete:
+
+- La eliminacion es logica, no fisica.
+- `Usuario.Eliminar()` marca `IsDeleted = true`.
+- EF Core usa un query filter global para ocultar usuarios eliminados:
+
+```csharp
+builder.HasQueryFilter(usuario => !usuario.IsDeleted);
+```
+
+- `GET /api/usuarios` y `GET /api/usuarios/{id}` no devuelven usuarios eliminados.
+- El indice unico de email se configura filtrado por usuarios activos:
+
+```csharp
+builder.HasIndex(usuario => usuario.Email).IsUnique().HasFilter("[IsDeleted] = 0");
+```
+
+Esto permite reutilizar un email cuando el usuario anterior fue eliminado logicamente.
+
+### Ajuste: pruebas para CRUD de usuarios
+
+Se agregaron pruebas funcionales para update, delete y endpoints CRUD.
+
+Archivos:
+
+```text
+Api.FunctionalTests/
+  Features/
+    Usuarios/
+      UsuariosUpdateCommandTests.cs
+      UsuariosDeleteCommandTests.cs
+      UsuariosCrudEndpointTests.cs
+```
+
+Reglas aplicadas:
+
+- Las pruebas de comandos usan `ISender.Send(...)`.
+- Las pruebas de endpoints usan `HttpClient` contra `WebApplicationFactory`.
+- Las pruebas no llaman handlers directamente.
+- La base se reinicia entre tests con Respawn.
+- Shouldly se usa para aserciones.
+- Bogus se mantiene aislado en factories para datos fake.

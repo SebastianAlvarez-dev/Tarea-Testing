@@ -18,6 +18,7 @@ public sealed class DatabaseSeeder
     {
         await _context.Database.EnsureCreatedAsync(cancellationToken);
         await EnsureEmailColumnAsync(cancellationToken);
+        await EnsureSoftDeleteColumnAsync(cancellationToken);
 
         if (await _context.Usuarios.AnyAsync(cancellationToken))
             return;
@@ -64,6 +65,33 @@ public sealed class DatabaseSeeder
                 ALTER TABLE [Usuarios] ALTER COLUMN [Email] nvarchar(256) NOT NULL;
             END;
 
+            """,
+            cancellationToken
+        );
+    }
+
+    private async Task EnsureSoftDeleteColumnAsync(CancellationToken cancellationToken)
+    {
+        await _context.Database.ExecuteSqlRawAsync(
+            """
+            IF OBJECT_ID(N'[Usuarios]', N'U') IS NOT NULL
+               AND COL_LENGTH(N'[Usuarios]', N'IsDeleted') IS NULL
+            BEGIN
+                ALTER TABLE [Usuarios] ADD [IsDeleted] bit NOT NULL CONSTRAINT [DF_Usuarios_IsDeleted] DEFAULT CAST(0 AS bit);
+            END;
+
+            IF OBJECT_ID(N'[Usuarios]', N'U') IS NOT NULL
+               AND EXISTS (
+                   SELECT 1
+                   FROM sys.indexes
+                   WHERE name = N'IX_Usuarios_Email'
+                     AND object_id = OBJECT_ID(N'[Usuarios]')
+                     AND (filter_definition IS NULL OR filter_definition <> N'([IsDeleted]=(0))')
+               )
+            BEGIN
+                DROP INDEX [IX_Usuarios_Email] ON [Usuarios];
+            END;
+
             IF OBJECT_ID(N'[Usuarios]', N'U') IS NOT NULL
                AND NOT EXISTS (
                    SELECT 1
@@ -72,7 +100,7 @@ public sealed class DatabaseSeeder
                      AND object_id = OBJECT_ID(N'[Usuarios]')
                )
             BEGIN
-                CREATE UNIQUE INDEX [IX_Usuarios_Email] ON [Usuarios] ([Email]);
+                CREATE UNIQUE INDEX [IX_Usuarios_Email] ON [Usuarios] ([Email]) WHERE [IsDeleted] = 0;
             END;
             """,
             cancellationToken

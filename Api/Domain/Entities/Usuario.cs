@@ -8,6 +8,7 @@ public sealed class Usuario : Entity
     public string Nombre { get; private set; } = string.Empty;
     public string Apellido { get; private set; } = string.Empty;
     public Email Email { get; private set; }
+    public bool IsDeleted { get; private set; }
 
     private Usuario() { }
 
@@ -38,5 +39,17 @@ public sealed class Usuario : Entity
     public void CambiarEmail(Email email)
     {
         Email = email;
+    }
+
+    public void Actualizar(string nombre, string apellido, Email email)
+    {
+        CambiarNombre(nombre);
+        CambiarApellido(apellido);
+        CambiarEmail(email);
+    }
+
+    public void Eliminar()
+    {
+        IsDeleted = true;
     }
 }
