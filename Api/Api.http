@@ -1,6 +1,22 @@
 @Api_HostAddress = http://localhost:5027
 
-GET {{Api_HostAddress}}/Api/Usuarios/
+GET {{Api_HostAddress}}/api/usuarios?pageNumber=1&pageSize=10
 Accept: application/json
+
+###
+
+GET {{Api_HostAddress}}/api/usuarios?pageNumber=0&pageSize=101
+Accept: application/json
+
+###
+
+POST {{Api_HostAddress}}/api/usuarios
+Content-Type: application/json
+
+{
+  "nombre": "Sebastian",
+  "apellido": "Prueba",
+  "email": "SEBASTIAN.PRUEBA@example.com"
+}
 
 ###

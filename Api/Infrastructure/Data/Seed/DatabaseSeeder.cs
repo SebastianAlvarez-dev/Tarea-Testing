@@ -1,4 +1,5 @@
 using Api.Domain.Entities;
+using Api.Domain.ValueObjects;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,7 @@ public sealed class DatabaseSeeder
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await _context.Database.EnsureCreatedAsync(cancellationToken);
-        await RemoveLegacyEmailColumnAsync(cancellationToken);
+        await EnsureEmailColumnAsync(cancellationToken);
 
         if (await _context.Usuarios.AnyAsync(cancellationToken))
             return;
@@ -25,12 +26,13 @@ public sealed class DatabaseSeeder
 
         var usuarios = Enumerable
             .Range(1, 20)
-            .Select(_ =>
+            .Select(index =>
             {
                 var nombre = faker.Name.FirstName();
                 var apellido = faker.Name.LastName();
+                var email = Email.From($"usuario{index}@example.com");
 
-                return new Usuario(nombre, apellido);
+                return new Usuario(nombre, apellido, email);
             })
             .ToArray();
 
@@ -38,23 +40,39 @@ public sealed class DatabaseSeeder
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task RemoveLegacyEmailColumnAsync(CancellationToken cancellationToken)
+    private async Task EnsureEmailColumnAsync(CancellationToken cancellationToken)
     {
         await _context.Database.ExecuteSqlRawAsync(
             """
-            IF EXISTS (
-                SELECT 1
-                FROM sys.indexes
-                WHERE name = N'IX_Usuarios_Email'
-                  AND object_id = OBJECT_ID(N'[Usuarios]')
-            )
+            IF OBJECT_ID(N'[Usuarios]', N'U') IS NOT NULL
+               AND COL_LENGTH(N'[Usuarios]', N'Email') IS NULL
             BEGIN
-                DROP INDEX [IX_Usuarios_Email] ON [Usuarios];
+                ALTER TABLE [Usuarios] ADD [Email] nvarchar(256) NULL;
+
+                EXEC(N'
+                    WITH NumberedUsuarios AS
+                    (
+                        SELECT [Id], ROW_NUMBER() OVER (ORDER BY [Apellido], [Nombre], [Id]) AS RowNumber
+                        FROM [Usuarios]
+                    )
+                    UPDATE u
+                    SET [Email] = CONCAT(''usuario'', n.RowNumber, ''@example.com'')
+                    FROM [Usuarios] u
+                    INNER JOIN NumberedUsuarios n ON u.[Id] = n.[Id];
+                ');
+
+                ALTER TABLE [Usuarios] ALTER COLUMN [Email] nvarchar(256) NOT NULL;
             END;
 
-            IF COL_LENGTH(N'[Usuarios]', N'Email') IS NOT NULL
+            IF OBJECT_ID(N'[Usuarios]', N'U') IS NOT NULL
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM sys.indexes
+                   WHERE name = N'IX_Usuarios_Email'
+                     AND object_id = OBJECT_ID(N'[Usuarios]')
+               )
             BEGIN
-                ALTER TABLE [Usuarios] DROP COLUMN [Email];
+                CREATE UNIQUE INDEX [IX_Usuarios_Email] ON [Usuarios] ([Email]);
             END;
             """,
             cancellationToken

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj": {}
+    "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj": {}
   },
   "projects": {
-    "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj": {
+    "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
+        "projectUniqueName": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
         "projectName": "Api",
-        "projectPath": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
+        "projectPath": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\Api.csproj",
         "packagesPath": "C:\\Users\\sebas\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\obj\\",
+        "outputPath": "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\NuGet.Config",
+          "C:\\Users\\sebas\\Documents\\Tarea#2 Servidores\\NuGet.Config",
           "C:\\Users\\sebas\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -48,6 +48,10 @@
             "Bogus": {
               "target": "Package",
               "version": "[35.6.5, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[14.1.0, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",

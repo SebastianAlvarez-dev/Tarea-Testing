@@ -159,3 +159,5 @@ C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\runtimes\win\l
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\MediatR.dll
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\MediatR.Contracts.dll

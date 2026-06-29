@@ -1,6 +1,7 @@
 using Api.Application.Features.Usuarios.CreateUsuario;
 using Api.Application.Features.Usuarios.GetUsuarioById;
 using Api.Application.Features.Usuarios.GetUsuarios;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -9,30 +10,26 @@ namespace Api.Controllers;
 [Route("api/usuarios")]
 public sealed class UsuariosController : ControllerBase
 {
-    private readonly CreateUsuarioCommandHandler _createUsuarioCommandHandler;
-    private readonly GetUsuarioByIdQueryHandler _getUsuarioByIdQueryHandler;
-    private readonly GetUsuariosQueryHandler _getUsuariosQueryHandler;
+    private readonly ISender _sender;
 
-    public UsuariosController(
-        CreateUsuarioCommandHandler createUsuarioCommandHandler,
-        GetUsuarioByIdQueryHandler getUsuarioByIdQueryHandler,
-        GetUsuariosQueryHandler getUsuariosQueryHandler
-    )
+    public UsuariosController(ISender sender)
     {
-        _createUsuarioCommandHandler = createUsuarioCommandHandler;
-        _getUsuarioByIdQueryHandler = getUsuarioByIdQueryHandler;
-        _getUsuariosQueryHandler = getUsuariosQueryHandler;
+        _sender = sender;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<GetUsuariosResponse>>> GetUsuarios(
+    public async Task<ActionResult<PaginatedResponse<GetUsuariosResponse>>> GetUsuarios(
+        [FromQuery] GetUsuariosRequest request,
         CancellationToken cancellationToken
     )
     {
-        var usuarios = await _getUsuariosQueryHandler.Handle(
-            new GetUsuariosQuery(),
-            cancellationToken
-        );
+        var query = request.ToQuery();
+        var validationErrors = GetUsuariosValidator.Validate(query);
+
+        if (validationErrors.Count > 0)
+            return ValidationProblem(new ValidationProblemDetails(validationErrors));
+
+        var usuarios = await _sender.Send(query, cancellationToken);
 
         return Ok(usuarios);
     }
@@ -43,10 +40,7 @@ public sealed class UsuariosController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var usuario = await _getUsuarioByIdQueryHandler.Handle(
-            new GetUsuarioByIdQuery(id),
-            cancellationToken
-        );
+        var usuario = await _sender.Send(new GetUsuarioByIdQuery(id), cancellationToken);
 
         if (usuario is null)
             return NotFound();
@@ -60,10 +54,7 @@ public sealed class UsuariosController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var usuario = await _createUsuarioCommandHandler.Handle(
-            request.ToCommand(),
-            cancellationToken
-        );
+        var usuario = await _sender.Send(request.ToCommand(), cancellationToken);
 
         return CreatedAtAction(nameof(GetUsuarioById), new { id = usuario.Id }, usuario);
     }

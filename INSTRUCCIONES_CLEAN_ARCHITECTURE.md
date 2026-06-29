@@ -799,34 +799,72 @@ public sealed class GetUsuariosQueryHandler
 }
 ```
 
-### Ajuste: Usuario sin Email
+### Ajuste: MediatR en features
 
-Se elimino el campo `Email` de la entidad `Usuario`.
+Las features se ejecutan a traves de MediatR.
 
 Decision actual:
 
-- `Usuario` solo contiene `Id`, `Nombre` y `Apellido`.
-- Los DTOs de las features de usuario ya no exponen ni reciben `Email`.
-- El seed con Bogus genera solo nombre y apellido.
-- La configuracion de EF Core ya no configura columna, conversion ni indice unico para email.
-- Se elimino el value object `Email` porque ya no existe un campo que lo use.
-- Como la base de Aspire es persistente, el seed elimina la columna e indice legacy de `Email` si existen en la tabla local.
+- Los comandos implementan `IRequest<TResponse>`.
+- Las queries implementan `IRequest<TResponse>`.
+- Los handlers implementan `IRequestHandler<TRequest, TResponse>`.
+- Los controladores inyectan `ISender`, no handlers concretos.
+- Las pruebas de features deben enviar comandos o queries mediante `ISender.Send(...)`.
 
-Estructura actual relevante:
-
-```text
-Domain/
-  Entities/
-    Usuario.cs
-```
-
-Constructor actual:
+Ejemplo:
 
 ```csharp
-public Usuario(string nombre, string apellido)
-    : base(Guid.NewGuid())
+var response = await sender.Send(new GetUsuariosQuery(1, 10));
+```
+
+### Ajuste: pruebas funcionales
+
+Se agrego un proyecto de pruebas funcionales con NUnit.
+
+Estructura:
+
+```text
+Api.FunctionalTests/
+Api.FunctionalTests.AppHost/
+```
+
+Reglas:
+
+- `Api.FunctionalTests.AppHost` levanta una base SQL Server separada para pruebas.
+- El AppHost de pruebas no usa volumen persistente, por lo que la base se recrea en cada ejecucion.
+- `Api.FunctionalTests` usa `WebApplicationFactory<Program>` para levantar el API real en memoria.
+- La cadena de conexion del AppHost de pruebas se inyecta al API durante el arranque del factory.
+- Respawn reinicia los datos antes de cada test.
+- Los tests no llaman handlers directamente; usan `ISender`.
+
+### Ajuste: Obtener usuarios paginado y validado
+
+La feature `GetUsuarios` ahora recibe parametros de paginacion.
+
+Endpoint:
+
+```text
+GET /api/usuarios?pageNumber=1&pageSize=10
+```
+
+Reglas:
+
+- `pageNumber` debe ser mayor o igual a 1.
+- `pageSize` debe estar entre 1 y 100.
+- La validacion vive en el archivo del vertical slice `GetUsuarios.cs`.
+- El controlador traduce errores de validacion a `ValidationProblem`.
+- La consulta usa `Skip` y `Take` sobre `ApplicationDbContext`.
+
+Respuesta:
+
+```json
 {
-    CambiarNombre(nombre);
-    CambiarApellido(apellido);
+  "items": [],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 0,
+  "totalPages": 0,
+  "hasPreviousPage": false,
+  "hasNextPage": false
 }
 ```
