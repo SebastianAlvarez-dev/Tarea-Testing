@@ -4,6 +4,7 @@ using Api.FunctionalTests.Factories;
 using Api.FunctionalTests.Infrastructure;
 using Shouldly;
 using System.Net;
+using System.Net.Http.Json;
 
 namespace Api.FunctionalTests.Features.Usuarios;
 
@@ -125,8 +126,14 @@ public sealed class UsuariosQueryTests : FunctionalTestFixture
         );
 
         var response = await Client.GetAsync($"/api/usuarios/{usuario.Id}");
+        var content = await response.Content.ReadFromJsonAsync<GetUsuarioByIdResponse>();
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldNotBeNull();
+        content.Id.ShouldBe(usuario.Id);
+        content.Nombre.ShouldBe("Paula");
+        content.Apellido.ShouldBe("Controller");
+        content.Email.ShouldBe("paula.controller@example.com");
     }
 
     [Test]
