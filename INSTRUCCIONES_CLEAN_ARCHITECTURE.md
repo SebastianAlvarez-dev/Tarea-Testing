@@ -458,3 +458,177 @@ El dominio expresa que hace el sistema.
 Application expresa los casos de uso.
 Infrastructure expresa como se conectan recursos externos.
 Api expresa como los usuarios o clientes interactuan con el sistema.
+
+## Soluciones Implementadas
+
+### Entidad Usuario
+
+Se agrego la entidad `Usuario` dentro de `Api/Domain/Entities`.
+
+Campos definidos:
+
+- `Id`
+- `Nombre`
+- `Apellido`
+- `Email`
+
+Reglas iniciales:
+
+- `Id` se genera automaticamente al crear un usuario.
+- `Nombre`, `Apellido` y `Email` son requeridos.
+- `Nombre` y `Apellido` se guardan sin espacios al inicio o final.
+- `Email` se guarda sin espacios y en minusculas.
+- La entidad expone metodos de comportamiento para cambiar sus datos.
+
+Ubicacion:
+
+```text
+Api/
+  Domain/
+    Entities/
+      Usuario.cs
+```
+
+Codigo base:
+
+```csharp
+public sealed class Usuario
+{
+    public Guid Id { get; private set; }
+    public string Nombre { get; private set; }
+    public string Apellido { get; private set; }
+    public string Email { get; private set; }
+
+    public Usuario(string nombre, string apellido, string email)
+    {
+        Id = Guid.NewGuid();
+        CambiarNombre(nombre);
+        CambiarApellido(apellido);
+        CambiarEmail(email);
+    }
+
+    public void CambiarNombre(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre del usuario es requerido.", nameof(nombre));
+
+        Nombre = nombre.Trim();
+    }
+
+    public void CambiarApellido(string apellido)
+    {
+        if (string.IsNullOrWhiteSpace(apellido))
+            throw new ArgumentException("El apellido del usuario es requerido.", nameof(apellido));
+
+        Apellido = apellido.Trim();
+    }
+
+    public void CambiarEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("El email del usuario es requerido.", nameof(email));
+
+        Email = email.Trim().ToLowerInvariant();
+    }
+}
+```
+
+### Ajuste: Common para entidades y objetos de valor
+
+Se agrego la carpeta `Api/Domain/Common` para centralizar clases base del dominio.
+
+Archivos agregados:
+
+- `Entity.cs`
+- `ValueObject.cs`
+
+Estructura actualizada:
+
+```text
+Api/
+  Domain/
+    Common/
+      Entity.cs
+      ValueObject.cs
+    Entities/
+      Usuario.cs
+    ValueObjects/
+```
+
+Regla aplicada:
+
+- Las entidades deben heredar de `Entity` cuando tengan identidad propia.
+- Los objetos de valor deben heredar de `ValueObject` cuando necesiten igualdad por valores.
+- `Usuario` ahora hereda de `Entity` y ya no declara manualmente la propiedad `Id`.
+
+Ejemplo:
+
+```csharp
+public sealed class Usuario : Entity
+{
+    public string Nombre { get; private set; }
+    public string Apellido { get; private set; }
+    public string Email { get; private set; }
+
+    public Usuario(string nombre, string apellido, string email)
+        : base(Guid.NewGuid())
+    {
+        CambiarNombre(nombre);
+        CambiarApellido(apellido);
+        CambiarEmail(email);
+    }
+}
+```
+
+### Ajuste: Objetos de valor con Vogen
+
+Los objetos de valor no se implementaran con una clase base manual `ValueObject`.
+
+Decision actual:
+
+- Los objetos de valor se representaran usando la libreria Vogen.
+- La carpeta `Domain/Common` no debe contener una clase base `ValueObject` manual.
+- `Entity` debe mantenerse solo para campos reutilizables de entidades, como `Id`.
+- Las validaciones propias de cada objeto de valor deben declararse en el tipo generado con Vogen.
+
+Estructura esperada:
+
+```text
+Api/
+  Domain/
+    Common/
+      Entity.cs
+    Entities/
+      Usuario.cs
+    ValueObjects/
+      Email.cs
+```
+
+Ejemplo conceptual con Vogen:
+
+```csharp
+using Vogen;
+
+namespace Api.Domain.ValueObjects;
+
+[ValueObject<string>]
+public readonly partial struct Email
+{
+    private static Validation Validate(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Validation.Invalid("El email es requerido.");
+
+        if (!value.Contains('@'))
+            return Validation.Invalid("El email no tiene un formato valido.");
+
+        return Validation.Ok;
+    }
+}
+```
+
+Regla:
+
+- Si un campo tiene reglas propias y significado de negocio, debe modelarse como value object con Vogen.
+- Si un campo es solo un dato simple sin reglas relevantes, puede mantenerse como tipo primitivo.
+- No crear objetos de valor manuales heredando de una clase base propia.
