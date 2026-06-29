@@ -760,3 +760,73 @@ CreateUsuario.cs
 ```
 
 Los controladores se mantienen en `Api/Controllers` porque este proyecto expone la API con controllers.
+
+### Ajuste: features usan directamente ApplicationDbContext
+
+Las features usan directamente `ApplicationDbContext` en sus handlers.
+
+Decision actual:
+
+- No usar repositorios para las features actuales.
+- No usar `IUsuarioRepository` para operaciones basicas de datos.
+- Cada handler puede consultar y persistir usando `ApplicationDbContext`.
+- Las consultas deben usar `AsNoTracking()` cuando solo leen datos.
+- Las operaciones de escritura deben usar `SaveChangesAsync` dentro del handler.
+- La configuracion de EF Core, conversiones de value objects y seed siguen viviendo en `Infrastructure`.
+
+Ejemplo esperado dentro de una feature:
+
+```csharp
+public sealed class GetUsuariosQueryHandler
+{
+    private readonly ApplicationDbContext _context;
+
+    public GetUsuariosQueryHandler(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IReadOnlyList<GetUsuariosResponse>> Handle(
+        GetUsuariosQuery query,
+        CancellationToken cancellationToken)
+    {
+        var usuarios = await _context.Usuarios
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+
+        return usuarios.Select(usuario => usuario.ToResponse()).ToArray();
+    }
+}
+```
+
+### Ajuste: Usuario sin Email
+
+Se elimino el campo `Email` de la entidad `Usuario`.
+
+Decision actual:
+
+- `Usuario` solo contiene `Id`, `Nombre` y `Apellido`.
+- Los DTOs de las features de usuario ya no exponen ni reciben `Email`.
+- El seed con Bogus genera solo nombre y apellido.
+- La configuracion de EF Core ya no configura columna, conversion ni indice unico para email.
+- Se elimino el value object `Email` porque ya no existe un campo que lo use.
+- Como la base de Aspire es persistente, el seed elimina la columna e indice legacy de `Email` si existen en la tabla local.
+
+Estructura actual relevante:
+
+```text
+Domain/
+  Entities/
+    Usuario.cs
+```
+
+Constructor actual:
+
+```csharp
+public Usuario(string nombre, string apellido)
+    : base(Guid.NewGuid())
+{
+    CambiarNombre(nombre);
+    CambiarApellido(apellido);
+}
+```

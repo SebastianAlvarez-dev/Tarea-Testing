@@ -17,5 +17,5 @@ public class Api_AppHost
     /// <summary>
     /// The path to the Aspire Host project.
     /// </summary>
-    public static string ProjectPath => """C:\Users\sebas\Documents\Tarea#2 Servidores\Api.AppHost""";
+    public static string ProjectPath => """c:\Users\sebas\Documents\Tarea#2 Servidores\Api.AppHost""";
 }

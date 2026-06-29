@@ -1,26 +1,18 @@
-using Api.Application.Abstractions.Data;
 using Api.Domain.Entities;
+using Api.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Application.Features.Usuarios.GetUsuarioById;
 
 public sealed record GetUsuarioByIdQuery(Guid Id);
 
-public sealed record GetUsuarioByIdResponse(
-    Guid Id,
-    string Nombre,
-    string Apellido,
-    string Email
-);
+public sealed record GetUsuarioByIdResponse(Guid Id, string Nombre, string Apellido);
 
 public static class GetUsuarioByIdMapper
 {
     public static GetUsuarioByIdResponse ToResponse(this Usuario usuario)
     {
-        return new GetUsuarioByIdResponse(
-            usuario.Id,
-            usuario.Nombre,
-            usuario.Apellido,
-            usuario.Email.Value);
+        return new GetUsuarioByIdResponse(usuario.Id, usuario.Nombre, usuario.Apellido);
     }
 }
 
@@ -35,20 +27,23 @@ public static class GetUsuarioByIdValidator
 
 public sealed class GetUsuarioByIdQueryHandler
 {
-    private readonly IUsuarioRepository _usuarioRepository;
+    private readonly ApplicationDbContext _context;
 
-    public GetUsuarioByIdQueryHandler(IUsuarioRepository usuarioRepository)
+    public GetUsuarioByIdQueryHandler(ApplicationDbContext context)
     {
-        _usuarioRepository = usuarioRepository;
+        _context = context;
     }
 
     public async Task<GetUsuarioByIdResponse?> Handle(
         GetUsuarioByIdQuery query,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         GetUsuarioByIdValidator.Validate(query);
 
-        var usuario = await _usuarioRepository.GetByIdAsync(query.Id, cancellationToken);
+        var usuario = await _context.Usuarios
+            .AsNoTracking()
+            .FirstOrDefaultAsync(usuario => usuario.Id == query.Id, cancellationToken);
 
         return usuario?.ToResponse();
     }

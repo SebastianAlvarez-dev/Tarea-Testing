@@ -16,7 +16,8 @@ public sealed class UsuariosController : ControllerBase
     public UsuariosController(
         CreateUsuarioCommandHandler createUsuarioCommandHandler,
         GetUsuarioByIdQueryHandler getUsuarioByIdQueryHandler,
-        GetUsuariosQueryHandler getUsuariosQueryHandler)
+        GetUsuariosQueryHandler getUsuariosQueryHandler
+    )
     {
         _createUsuarioCommandHandler = createUsuarioCommandHandler;
         _getUsuarioByIdQueryHandler = getUsuarioByIdQueryHandler;
@@ -25,9 +26,13 @@ public sealed class UsuariosController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GetUsuariosResponse>>> GetUsuarios(
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var usuarios = await _getUsuariosQueryHandler.Handle(new GetUsuariosQuery(), cancellationToken);
+        var usuarios = await _getUsuariosQueryHandler.Handle(
+            new GetUsuariosQuery(),
+            cancellationToken
+        );
 
         return Ok(usuarios);
     }
@@ -35,11 +40,13 @@ public sealed class UsuariosController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<GetUsuarioByIdResponse>> GetUsuarioById(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var usuario = await _getUsuarioByIdQueryHandler.Handle(
             new GetUsuarioByIdQuery(id),
-            cancellationToken);
+            cancellationToken
+        );
 
         if (usuario is null)
             return NotFound();
@@ -50,9 +57,13 @@ public sealed class UsuariosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CreateUsuarioResponse>> CreateUsuario(
         CreateUsuarioRequest request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var usuario = await _createUsuarioCommandHandler.Handle(request.ToCommand(), cancellationToken);
+        var usuario = await _createUsuarioCommandHandler.Handle(
+            request.ToCommand(),
+            cancellationToken
+        );
 
         return CreatedAtAction(nameof(GetUsuarioById), new { id = usuario.Id }, usuario);
     }

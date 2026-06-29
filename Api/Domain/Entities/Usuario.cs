@@ -1,5 +1,4 @@
-﻿using Api.Domain.Common;
-using Api.Domain.ValueObjects;
+using Api.Domain.Common;
 
 namespace Api.Domain.Entities;
 
@@ -7,18 +6,14 @@ public sealed class Usuario : Entity
 {
     public string Nombre { get; private set; } = string.Empty;
     public string Apellido { get; private set; } = string.Empty;
-    public Email Email { get; private set; }
 
-    private Usuario()
-    {
-    }
+    private Usuario() { }
 
-    public Usuario(string nombre, string apellido, Email email)
+    public Usuario(string nombre, string apellido)
         : base(Guid.NewGuid())
     {
         CambiarNombre(nombre);
         CambiarApellido(apellido);
-        CambiarEmail(email);
     }
 
     public void CambiarNombre(string nombre)
@@ -35,10 +30,5 @@ public sealed class Usuario : Entity
             throw new ArgumentException("El apellido del usuario es requerido.", nameof(apellido));
 
         Apellido = apellido.Trim();
-    }
-
-    public void CambiarEmail(Email email)
-    {
-        Email = email;
     }
 }
