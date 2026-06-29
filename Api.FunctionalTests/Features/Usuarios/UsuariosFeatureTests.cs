@@ -3,6 +3,7 @@ using Api.FunctionalTests.Factories;
 using Api.FunctionalTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
+using System.Net;
 
 namespace Api.FunctionalTests.Features.Usuarios;
 
@@ -74,5 +75,21 @@ public sealed class UsuariosFeatureTests : FunctionalTestFixture
         );
 
         exception.Message.ShouldBe("La paginacion solicitada no es valida.");
+    }
+
+    [Test]
+    public async Task Obtener_usuario_controller_debeRetornar_HttpOk()
+    {
+        var usuario = await Sender.Send(
+            UsuarioCommandFactory.Create(
+                nombre: "Paula",
+                apellido: "Controller",
+                email: "paula.controller@example.com"
+            )
+        );
+
+        var response = await Client.GetAsync($"/api/usuarios/{usuario.Id}");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

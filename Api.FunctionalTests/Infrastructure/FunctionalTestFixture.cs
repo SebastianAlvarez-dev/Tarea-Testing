@@ -12,6 +12,8 @@ public abstract class FunctionalTestFixture
 
     protected ApplicationDbContext DbContext => GetRequiredService<ApplicationDbContext>();
 
+    protected HttpClient Client => Application.Client;
+
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {

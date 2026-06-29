@@ -12,6 +12,7 @@ public sealed class FunctionalTestApplication : IAsyncDisposable
 {
     private DistributedApplication? _app;
     private ApiWebApplicationFactory? _factory;
+    private HttpClient? _client;
     private Respawner? _respawner;
     private string? _connectionString;
     private string? _previousConnectionStringEnvironmentValue;
@@ -19,6 +20,10 @@ public sealed class FunctionalTestApplication : IAsyncDisposable
     public IServiceProvider Services =>
         _factory?.Services
         ?? throw new InvalidOperationException("La aplicacion de pruebas no esta inicializada.");
+
+    public HttpClient Client =>
+        _client
+        ?? throw new InvalidOperationException("El cliente HTTP de pruebas no esta inicializado.");
 
     public async Task StartAsync()
     {
@@ -47,6 +52,7 @@ public sealed class FunctionalTestApplication : IAsyncDisposable
 
         _factory = new ApiWebApplicationFactory(_connectionString);
         _ = _factory.Services;
+        _client = _factory.CreateClient();
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync(timeout.Token);
@@ -72,6 +78,8 @@ public sealed class FunctionalTestApplication : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _client?.Dispose();
+
         if (_factory is not null)
             await _factory.DisposeAsync();
 
