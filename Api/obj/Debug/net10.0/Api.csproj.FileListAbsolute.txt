@@ -31,3 +31,7 @@ C:\Users\sebas\Documents\Tarea#2 Servidores\Api\obj\Debug\net10.0\refint\Api.dll
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\obj\Debug\net10.0\Api.pdb
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\obj\Debug\net10.0\Api.genruntimeconfig.cache
 C:\Users\sebas\Documents\Tarea#2 Servidores\Api\obj\Debug\net10.0\ref\Api.dll
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\Vogen.SharedTypes.dll
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\obj\Debug\net10.0\Api.sourcelink.json
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\sebas\Documents\Tarea#2 Servidores\Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll

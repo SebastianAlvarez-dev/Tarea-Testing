@@ -632,3 +632,32 @@ Regla:
 - Si un campo tiene reglas propias y significado de negocio, debe modelarse como value object con Vogen.
 - Si un campo es solo un dato simple sin reglas relevantes, puede mantenerse como tipo primitivo.
 - No crear objetos de valor manuales heredando de una clase base propia.
+
+### Implementacion real de Vogen para Email
+
+Se agrego el paquete NuGet `Vogen` al proyecto `Api/Api.csproj` usando:
+
+```bash
+dotnet add Api/Api.csproj package Vogen
+```
+
+Se creo el objeto de valor `Email` en:
+
+```text
+Api/Domain/ValueObjects/Email.cs
+```
+
+`Usuario.Email` dejo de ser `string` y ahora usa el value object `Email`.
+
+Regla actual:
+
+- La entidad recibe un `Email` ya validado.
+- La validacion del formato basico y normalizacion del email vive en `Email` usando Vogen.
+- `Usuario` mantiene reglas propias de entidad como nombre y apellido requeridos.
+
+Uso esperado:
+
+```csharp
+var email = Email.From("USUARIO@correo.com");
+var usuario = new Usuario("Juan", "Perez", email);
+```
