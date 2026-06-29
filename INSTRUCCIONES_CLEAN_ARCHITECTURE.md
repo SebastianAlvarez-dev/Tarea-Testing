@@ -661,3 +661,102 @@ Uso esperado:
 var email = Email.From("USUARIO@correo.com");
 var usuario = new Usuario("Juan", "Perez", email);
 ```
+
+### Implementacion: endpoint de usuarios, EF Core y seed con Bogus
+
+Se agrego infraestructura de datos usando Entity Framework Core y SQL Server, aprovechando el recurso `bd` definido en Aspire AppHost.
+
+Paquetes agregados al proyecto `Api`:
+
+```bash
+dotnet add Api/Api.csproj package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add Api/Api.csproj package Microsoft.EntityFrameworkCore.Design
+dotnet add Api/Api.csproj package Bogus
+```
+
+Estructura agregada:
+
+```text
+Api/
+  Application/
+    Abstractions/
+      Data/
+        IUsuarioRepository.cs
+    Features/
+      Usuarios/
+        CreateUsuario/
+          CreateUsuario.cs
+        GetUsuarioById/
+          GetUsuarioById.cs
+        GetUsuarios/
+          GetUsuarios.cs
+    DependencyInjection.cs
+  Infrastructure/
+    Data/
+      ApplicationDbContext.cs
+      Configurations/
+        UsuarioConfiguration.cs
+      Repositories/
+        UsuarioRepository.cs
+      Seed/
+        DatabaseSeeder.cs
+    DependencyInjection.cs
+  Controllers/
+    UsuariosController.cs
+```
+
+Endpoints agregados:
+
+```text
+GET  /api/usuarios
+GET  /api/usuarios/{id}
+POST /api/usuarios
+```
+
+Reglas aplicadas:
+
+- La API delega en handlers de Application.
+- Application depende de `IUsuarioRepository`, no de Entity Framework directamente.
+- Infrastructure implementa `UsuarioRepository` con `ApplicationDbContext`.
+- `Usuario.Email` se persiste como string usando conversion de EF Core hacia el value object `Email` de Vogen.
+- `DatabaseSeeder` usa Bogus para crear 20 usuarios iniciales cuando la tabla esta vacia.
+- El seed se ejecuta al iniciar la API.
+
+### Ajuste: vertical slice en un solo archivo por feature
+
+El proyecto usa controladores para exponer HTTP, pero cada caso de uso debe mantenerse como vertical slice.
+
+Regla actual:
+
+- Cada feature debe tener un solo archivo principal.
+- En ese archivo deben vivir query o command, DTOs, mapeos, handler y validaciones.
+- Los controladores solo traducen HTTP hacia la feature correspondiente.
+- No separar una misma feature en carpetas tecnicas como `Requests`, `Responses`, `Handlers`, `Validators` o `Mappings`.
+
+Estructura esperada:
+
+```text
+Application/
+  Features/
+    Usuarios/
+      CreateUsuario/
+        CreateUsuario.cs
+      GetUsuarioById/
+        GetUsuarioById.cs
+      GetUsuarios/
+        GetUsuarios.cs
+```
+
+Contenido esperado por archivo:
+
+```text
+CreateUsuario.cs
+  CreateUsuarioRequest
+  CreateUsuarioCommand
+  CreateUsuarioResponse
+  CreateUsuarioMapper
+  CreateUsuarioValidator
+  CreateUsuarioCommandHandler
+```
+
+Los controladores se mantienen en `Api/Controllers` porque este proyecto expone la API con controllers.
