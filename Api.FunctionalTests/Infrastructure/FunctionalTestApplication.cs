@@ -79,16 +79,22 @@ public sealed class FunctionalTestApplication : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _client?.Dispose();
+        _client = null;
 
         if (_factory is not null)
             await _factory.DisposeAsync();
+        _factory = null;
 
         Environment.SetEnvironmentVariable(
             "ConnectionStrings__bd",
             _previousConnectionStringEnvironmentValue
         );
+        _previousConnectionStringEnvironmentValue = null;
 
         if (_app is not null)
             await _app.DisposeAsync();
+        _app = null;
+        _respawner = null;
+        _connectionString = null;
     }
 }
